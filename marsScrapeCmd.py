@@ -30,5 +30,5 @@ marsExtract = tweetTable[['Date','Temperature High','Temperature Low','Pressure'
 marsExtract.to_csv('mars_weather.csv', index=False)
 
 marsExtract.plot(kind='scatter',x='Temperature High',y='Pressure',color='red')
-plt.savefig('mars_scatter_plot.png')
+plt.savefig('mars.png')
 plt.show()
