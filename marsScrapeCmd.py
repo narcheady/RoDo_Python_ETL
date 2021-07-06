@@ -1,21 +1,40 @@
 import pandas as pd
-from twitter import Twitter
-from twitter import OAuth
+# from twitter import Twitter
+# from twitter import OAuth
 import re
 import matplotlib.pyplot as plt
 
 
-accesstoken = '1306383817473699840-7lOFPXnXan5KjfF2JGlepqalGq2EaX'
-accesstokensecret= 'z0wokk3M7z7A7mHJll1UAX7QlYiPUAVv1Fx62W92awpHi'
-apikey = 'LMcVqFvyJSyBSJIiusvuv2qwz'
-apisecretkey = 'ten59LiLXRwRUVbnwwBBef52GJfifUGfAxe4mpGMoiu4cMfdIN'
+# accesstoken = '1306383817473699840-7lOFPXnXan5KjfF2JGlepqalGq2EaX'
+# accesstokensecret= 'z0wokk3M7z7A7mHJll1UAX7QlYiPUAVv1Fx62W92awpHi'
+# apikey = 'LMcVqFvyJSyBSJIiusvuv2qwz'
+# apisecretkey = 'ten59LiLXRwRUVbnwwBBef52GJfifUGfAxe4mpGMoiu4cMfdIN'
 
-oauth=OAuth(accesstoken,accesstokensecret,apikey,apisecretkey)
-api = Twitter(auth=oauth,retry=True)
+# oauth=OAuth(accesstoken,accesstokensecret,apikey,apisecretkey)
+# api = Twitter(auth=oauth,retry=True)
 
-tweetList = api.search.tweets(q="marswxreport lang:en -filter:retweets",tweetmode='extended',count=100)
-tweetTable=pd.json_normalize(tweetList['statuses'])
-tweetTable = tweetTable[['text']]
+# tweetList = api.search.tweets(q="marswxreport lang:en -filter:retweets",tweetmode='extended',count=100)
+# tweetTable=pd.json_normalize(tweetList['statuses'])
+# tweetTable = tweetTable[['text']]
+
+import requests
+from bs4 import BeautifulSoup
+
+contents = requests.get(
+    "https://twitter.com/MarsWxReport",
+    headers={"User-Agent": "UCWEB/2.0 (compatible; Googlebot/2.1; +google.com/bot.html)"}
+)
+soup = BeautifulSoup(contents.text, "html.parser")
+
+tweetTable = pd.DataFrame(columns=['text'])
+
+tweets_list = list()
+tweets = soup.find_all("div", {"class": "js-tweet-text-container"})
+
+for tweet in tweets:
+    tweet_text = tweet.find("p", {"class": "TweetTextSize TweetTextSize--normal js-tweet-text tweet-text"}).text.replace("\n", " ").strip()
+    tweetTable = tweetTable.append({'text':tweet_text}, ignore_index = True)
+
 tweetTable['Date']=tweetTable['text'].str.extract('\(([^\)]+)\)')
 tweetTable = tweetTable.dropna()
 tweetTable = tweetTable.reset_index(drop=True)
